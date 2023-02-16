@@ -1,4 +1,4 @@
-# Real Estate Web Scraping Project
+# Real Estate Web Scraping Project (WIP - at the moment quite messy...)
 
 A project to collect and analyze data on new construction projects in the real estate industry.
 
