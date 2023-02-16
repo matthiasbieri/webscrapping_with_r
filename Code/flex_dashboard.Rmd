@@ -1,0 +1,82 @@
+---
+title: "Real Estate Dashboard "
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: rows
+    theme: 
+      version: 4
+      bootswatch: minty
+---
+
+```{r setup, include=FALSE, warning=FALSE, echo=FALSE}
+library(janitor)
+library(dplyr)
+library(fable)
+library(ggplot2)
+library(plotly)
+library(flexdashboard)
+library(tidyr)
+library(leaflet)
+library(kableExtra)
+library(leaflet.extras)
+
+library(readxl)
+fake_data <- read_excel("data/fake_data.xlsx", 
+    sheet = "Tabelle1")
+
+```
+
+
+Row {data-height=550}
+-------------------------------------
+
+### Free Objects
+```{r free_objects}
+fake_data %>% 
+  group_by(timestamp, status, room) %>% 
+  summarize(nObjects = n()) %>% 
+  filter(status == "Frei") %>% 
+  ggplot(aes(x = timestamp, y = nObjects, fill = as.factor(room))) +
+  geom_col() +
+  theme_bw() +
+  theme(legend.position = c(0.93, 0.80),
+        legend.background = element_rect(fill = "white", color = "black")) +
+  guides(fill=guide_legend(title="Rooms")) +
+  labs(x = "Month", y = "n Objects")
+```
+
+### Changes in Status
+```{r change_in_status}
+fake_data %>% 
+  group_by(timestamp, status, room) %>% 
+  summarize(nObjects = n()) %>% 
+  ggplot(aes(x = timestamp, y = nObjects, fill = status)) +
+  geom_col() +
+  facet_wrap(~ room) +
+  theme_bw() +
+  theme(legend.position="bottom") +
+  guides(fill=guide_legend(title="Status")) +
+  labs(x = "Month", y = "n Objects")
+```
+
+
+Row {data-height=450}
+-------------------------------------
+### Price per Floor
+```{r price_per_floor}
+tmp <- fake_data %>% filter(as.Date(timestamp) == "2023-02-01")
+
+p3 <- ggplot(tmp, aes(x=Etage, y=as.numeric(prices))) +
+  geom_boxplot() +
+  theme_bw() +
+  labs(y = "Price in [CHF]", x = "Floor")
+ggplotly(p3)
+```
+
+### Map
+```{r map}
+# Create a leaflet map
+leaflet(fake_data) %>% addTiles() %>%
+  addMarkers(lat = ~lat, lng = ~lon) 
+
+```
